@@ -12,7 +12,7 @@ def depositar(valor : float) -> None:
 
     saldo += valor
     operacoes.append(valor)
-    print(f"Depósito de R${valor} efetuado.\nSaldo atual: R${saldo}")
+    print(f"Depósito de R${valor:.2f} efetuado.\nSaldo atual: R${saldo:.2f}")
 
 def sacar(valor : float) -> None:
     global saldo
@@ -22,7 +22,7 @@ def sacar(valor : float) -> None:
     assert((type(valor) in (float, int)) and (valor > 0))
 
     if (valor > MAX_SAQUE):
-        print(f"Valor de saque máximo excedeu o limite de R${MAX_SAQUE}!")
+        print(f"Valor de saque máximo excedeu o limite de R${MAX_SAQUE:.2f}!")
         return
 
     if (saldo <= 0):
@@ -37,17 +37,21 @@ def sacar(valor : float) -> None:
     operacoes.append(-valor)
     saques += 1
 
-    print(f"Saque de R${valor} efetuado.\nSaldo atual: R${saldo}")
+    print(f"Saque de R${valor:.2f} efetuado.\nSaldo atual: R${saldo:.2f}")
 
 def extrato():
     global operacoes
 
     print("\n\nEXTRATO:")
+    if len(operacoes) == 0:
+        print("Nenhuma operação efetuada")
+        return
+    
     for op in operacoes:
         if (op > 0):
-            print(f"Depósito:  R${op}.")
+            print(f"Depósito:  R${op:.2f}")
         if (op < 0):
-            print(f"Saque:  R${op}.")            
+            print(f"Saque:  R${op:.2f}")            
 
 if __name__ == "__main__":
     sacar(100)
