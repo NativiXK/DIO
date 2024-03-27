@@ -12,7 +12,7 @@ def depositar(valor : float) -> None:
 
     saldo += valor
     operacoes.append(valor)
-    print(f"Depósito de R${valor:.2f} efetuado.\nSaldo atual: R${saldo:.2f}")
+    print(f"Depósito de R${valor:.2f} efetuado.")
 
 def sacar(valor : float) -> None:
     global saldo
@@ -37,12 +37,12 @@ def sacar(valor : float) -> None:
     operacoes.append(-valor)
     saques += 1
 
-    print(f"Saque de R${valor:.2f} efetuado.\nSaldo atual: R${saldo:.2f}")
+    print(f"Saque de R${valor:.2f} efetuado.")
 
 def extrato():
     global operacoes
 
-    print("\n\nEXTRATO:")
+    print("\nEXTRATO:")
     if len(operacoes) == 0:
         print("Nenhuma operação efetuada")
         return
@@ -54,13 +54,36 @@ def extrato():
             print(f"Saque:  R${op:.2f}")            
 
 if __name__ == "__main__":
-    sacar(100)
-    depositar(500.5)
-    depositar(250)
-    sacar(300)
-    sacar(200)
-    depositar(500)
-    sacar(600)
-    sacar(400)
-    sacar(350)
-    extrato()
+    
+    while True:
+        menu = f"""
+Saldo: R${saldo}
+
+Digite a opção desejada:
+
+[1] - Depósitar
+[2] - Sacar
+[E] - Extrato
+
+[0] - Sair
+
+"""
+
+        acao = input(menu).upper()
+        print()
+
+        if acao == '0':
+            break
+
+        if acao == '1':
+            print('Depósito:')
+            valor = int(input("Insira o valor: R$"))
+            depositar(valor)
+        
+        if acao == '2':
+            print('Saque:')
+            valor = int(input("Insira o valor: R$"))
+            sacar(valor)
+
+        if acao == 'E':
+            extrato()
