@@ -1,4 +1,42 @@
 
+class Transacao:
+
+    def __init__(self, valor : float) -> None:
+        self.__valor : float = valor
+        self.__tipo : str
+
+    @property
+    def valor(self) -> float:
+        return self.__valor
+
+    @property
+    def tipo(self) -> str:
+        return self.__tipo
+    
+    @valor.setter
+    def valor(self, valor : float):
+        self.__valor = valor
+
+    def __str__(self):
+        return f"{self.tipo} - R${self.valor}"
+
+class Saque(Transacao):
+
+    def __init__(self, valor: float) -> None:
+        super().__init__(valor)
+        self.tipo = self.__class__.__name__
+
+class Deposito(Transacao):
+
+    def __init__(self, valor: float) -> None:
+        super().__init__(valor)
+        self.tipo = self.__class__.__name__
+
+class Extrato:
+
+    def __init__(self) -> None:
+        pass
+
 class Usuario:
 
     def __init__(self, nome, sobrenome, email) -> None:
@@ -41,10 +79,10 @@ class Conta:
     def __init__(self, usuario : Usuario, numero : int, senha : int, saldo : float = 0) -> None:
         self.__usuario : Usuario = usuario
         self.__numero : int = numero
+        self.__senha : int = senha
         self.__saldo : float = saldo
         self.__saques : int = 0
-        self.__extrato : str = ""
-        self.__senha : int = senha
+        self.__extrato : Extrato = Extrato()
 
     @property
     def numero(self) -> int:
@@ -53,6 +91,16 @@ class Conta:
     @property
     def senha(self) -> int:
         return self.__senha
+
+    @property
+    def extrato(self):
+        extrato = "\nEXTRATO:\n"
+        extrato += ("-" * 20)
+        extrato += f"\n{self.__usuario}\n"
+        extrato += ("-" * 20)
+        extrato += f"\nConta: {self.__numero}\n"
+        extrato += ("-" * 20)
+        extrato += '\n' + self.__extrato
 
     def depositar(self, valor : float) -> None:
 
@@ -85,18 +133,10 @@ class Conta:
 
         print(f"Saque de R${valor:.2f} efetuado.")
 
-    def extrato(self):
-        print("\nEXTRATO:")
-        print("-" * 20)
-        print(f"{self.__usuario}")
-        print("-" * 20)
-        print(f"Conta: {self.__numero}")
-        print("-" * 20)
-        print(self.__extrato)
-
     def __str__(self) -> str:
         return f"Conta: {self.__numero}\nSaldo: R${self.__saldo}\n\nLimite de saque: R${Conta.MAX_SAQUE}\nSaques disponíveis: {Conta.LIMITE_SAQUES - self.__saques}"
 
+    @staticmethod
     def nova_conta() -> 'Conta':
         print('CRIANDO NOVA CONTA')
         print('-' * 20)
@@ -133,7 +173,6 @@ Digite a opção desejada:
 
 [NC] - Nova conta
 [SC] - Selecionar conta
-[LC] - Listar contas
 
 [F] - Sair
 
@@ -189,10 +228,22 @@ if __name__ == "__main__":
                 input()
 
         if acao == 'SC':
+            print('CONTAS')
+            print('-' * 20)
+            for conta in contas:
+                print(' - ' + str(conta.numero))
+            print('-' * 20)
             print('SELECIONAR CONTA')
             print('-' * 20)
-            numero = int(input('Numero: '))
-            senha = hash(input('Senha: '))
+
+            try:
+                numero = int(input('Número: '))
+                senha = hash(input('Senha: '))
+
+            except Exception:
+                numero = 0
+                senha = 0
+
             conta_numero = None
 
             for conta in contas:
@@ -202,17 +253,13 @@ if __name__ == "__main__":
                         break
                     else:
                         print('Senha inválida')
-                    
+                        conta_numero = Conta
+                        input()
+
             if conta_numero is not None:
                 conta_selecionada = conta_numero
             else:
                 print('Nenhuma conta localizada!')
+                input()
 
-            input()
-            
-        if acao == 'LC':
-            print('CONTAS')
             print('-' * 20)
-            for conta in contas:
-                print(' - ' + str(conta.numero))
-            input()
