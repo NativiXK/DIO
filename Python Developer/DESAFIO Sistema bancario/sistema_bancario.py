@@ -1,18 +1,28 @@
+"""
+Desafio Sistema bancário - Trilha Python Developer - DIO
+
+Mateus Konkol
+
+"""
 
 class Transacao:
-
-    def __init__(self, valor : float) -> None:
+    """
+    Esta classe serve como base para todas as transações realizadas na conta
+    """
+    def __init__(self, valor : float, tipo : str) -> None:
         self.__valor : float = valor
-        self.__tipo : str
+        self.__tipo : str = tipo
 
     @property
     def valor(self) -> float:
+        """Retorna o valor da transação"""
         return self.__valor
 
     @property
     def tipo(self) -> str:
+        """Retorna o tipo da transação"""
         return self.__tipo
-    
+
     @valor.setter
     def valor(self, valor : float):
         self.__valor = valor
@@ -21,24 +31,35 @@ class Transacao:
         return f"{self.tipo} - R${self.valor}"
 
 class Saque(Transacao):
-
+    """Classe que determina a transação como Saque"""
     def __init__(self, valor: float) -> None:
-        super().__init__(valor)
-        self.tipo = self.__class__.__name__
+        super().__init__(valor, "Saque")
 
 class Deposito(Transacao):
-
+    """Classe que determina a transação como depósito"""
     def __init__(self, valor: float) -> None:
-        super().__init__(valor)
-        self.tipo = self.__class__.__name__
+        super().__init__(valor, "Depósito")
 
 class Extrato:
-
+    """Classe Extrato armazena e gerencia todas as transações realizadas"""
     def __init__(self) -> None:
-        pass
+        self.__transacoes = []
+
+    def nova_transacao(self, transacao : Transacao):
+        """Registra uma nova transação"""
+        self.__transacoes.append(transacao)
+
+    def __str__(self) -> str:
+        """Retorna uma string com todas as transações formatadas"""
+        res = ""
+
+        for trans in self.__transacoes:
+            res += f'{str(trans)}\n'
+        
+        return res
 
 class Usuario:
-
+    """A classe usuário é responsável por gerenciar um usuário que pode ter várias contas"""
     def __init__(self, nome, sobrenome, email) -> None:
         self.__nome = nome
         self.__sobrenome = sobrenome
@@ -46,14 +67,17 @@ class Usuario:
 
     @property
     def nome(self) -> str:
+        """Retorna o nome do usuário"""
         return self.__nome
 
     @property
     def sobrenome(self) -> str:
+        """Retorna o sobrenome do usuário"""
         return self.__sobrenome
-    
+
     @property
     def email(self) -> str:
+        """Retorna o email do usuário"""
         return self.__email
 
     @nome.setter
@@ -63,7 +87,7 @@ class Usuario:
     @sobrenome.setter
     def sobrenome(self, sobrenome):
         self.__sobrenome = sobrenome
-    
+
     @email.setter
     def email(self, email):
         self.__email = email
@@ -72,9 +96,10 @@ class Usuario:
         return f"Cliente: {self.nome} {self.sobrenome}\t\tEmail: {self.email}"
 
 class Conta:
+    """A classe conta gerencia todas as transações do usuário assim como as informações da conta"""
 
-    LIMITE_SAQUES = 3
-    MAX_SAQUE = 500
+    LIMITE_SAQUES : int = 3
+    MAX_SAQUE : int = 500
 
     def __init__(self, usuario : Usuario, numero : int, senha : int, saldo : float = 0) -> None:
         self.__usuario : Usuario = usuario
@@ -86,58 +111,78 @@ class Conta:
 
     @property
     def numero(self) -> int:
+        """Retorna o número da conta"""
         return self.__numero
 
     @property
     def senha(self) -> int:
+        """Retorna o hash da senha da conta"""
         return self.__senha
 
     @property
+    def saldo(self) -> float:
+        """Retorna o saldo atual da conta"""
+        return self.__saldo
+
+    @property
     def extrato(self):
+        """Retorna uma string formatada com as informações da conta e 
+        todas as transações realizadas"""
         extrato = "\nEXTRATO:\n"
         extrato += ("-" * 20)
         extrato += f"\n{self.__usuario}\n"
         extrato += ("-" * 20)
         extrato += f"\nConta: {self.__numero}\n"
         extrato += ("-" * 20)
-        extrato += '\n' + self.__extrato
+        extrato += '\n' + str(self.__extrato)
+        
+        return extrato
 
-    def depositar(self, valor : float) -> None:
+    def depositar(self, transacao : Deposito) -> None:
+        """Realiza um depósito na conta"""
 
-        assert((type(valor) in (float, int)) and (valor > 0))
+        assert((isinstance(transacao, Deposito)) and (transacao.valor > 0))
 
-        self.__saldo += valor
-        self.__extrato += f"\nDepósito de R${valor:.2f}"
+        self.__saldo += transacao.valor
+        self.__extrato.nova_transacao(transacao=transacao)
 
-        print(f"Depósito de R${valor:.2f} efetuado.")
+        print(f"Depósito de R${transacao.valor:.2f} efetuado.")
 
-    def sacar(self, valor : float) -> None:
-       
-        assert((type(valor) in (float, int)) and (valor > 0))
+    def sacar(self, transacao : Saque) -> None:
+        """Realiza um saque na conta, respeitando as regras de negócio 
+        (Limites de saques diários e valor máximo de saque)"""
+        assert((isinstance(transacao, Saque)) and (transacao.valor > 0))
 
-        if (valor > Conta.MAX_SAQUE):
-            print(f"Valor de saque máximo excedeu o limite de R${Conta.MAX_SAQUE:.2f}!")
+        if transacao.valor > self.MAX_SAQUE:
+            print(f"Valor de saque máximo excedeu o limite de R${self.MAX_SAQUE:.2f}!")
             return
 
-        if (self.__saldo <= 0):
+        if self.__saldo <= 0:
             print("Saldo insuficiente")
             return
 
-        if (self.__saques >= Conta.LIMITE_SAQUES):
-            print(f"Limite de {Conta.LIMITE_SAQUES} saques diários atingido")
+        if self.__saques >= self.LIMITE_SAQUES:
+            print(f"Limite de {self.LIMITE_SAQUES} saques diários atingido")
             return
-        
-        self.__saldo -= valor
-        self.__extrato += f"\nSaque de R${valor:.2f}"
+
+        self.__saldo -= transacao.valor
+        self.__extrato.nova_transacao(transacao=transacao)
         self.__saques += 1
 
-        print(f"Saque de R${valor:.2f} efetuado.")
+        print(f"Saque de R${transacao.valor:.2f} efetuado.")
 
     def __str__(self) -> str:
-        return f"Conta: {self.__numero}\nSaldo: R${self.__saldo}\n\nLimite de saque: R${Conta.MAX_SAQUE}\nSaques disponíveis: {Conta.LIMITE_SAQUES - self.__saques}"
+        return f"""
+        Conta: {self.__numero}
+        Saldo: R${self.__saldo}
+        
+        Limite de saque: R${self.MAX_SAQUE}
+        Saques disponíveis: {self.LIMITE_SAQUES - self.__saques}"""
 
     @staticmethod
     def nova_conta() -> 'Conta':
+        """Função estática para auxiliar na criação de uma nova conta"""
+
         print('CRIANDO NOVA CONTA')
         print('-' * 20)
         nome = input("Nome: ")
@@ -156,6 +201,9 @@ class Conta:
         return Conta(usuario=usuario, numero=hash(usuario), senha=nova_senha)
 
 def menu(conta : Conta) -> str:
+    """
+    Função que imprime o menu disponível e retorna a escolha do usuário
+    """
     menu = f"""
 ------------------------
         CONTA
@@ -186,7 +234,7 @@ if __name__ == "__main__":
     conta_selecionada : Conta = None
 
     while True:
-        
+
         acao = menu(conta_selecionada)
         print()
 
@@ -195,18 +243,18 @@ if __name__ == "__main__":
 
         if acao == 'D':
             print('Depósito:')
-            valor = int(input("Insira o valor: R$"))
-            conta_selecionada.depositar(valor)
+            valor = float(input("Insira o valor: R$"))
+            conta_selecionada.depositar(Deposito(valor))
             input()
 
         if acao == 'S':
             print('Saque:')
-            valor = int(input("Insira o valor: R$"))
-            conta_selecionada.sacar(valor)
+            valor = float(input("Insira o valor: R$"))
+            conta_selecionada.sacar(Saque(valor))
             input()
 
         if acao == 'E':
-            conta_selecionada.extrato()
+            print(conta_selecionada.extrato)
             input()
 
         if acao == 'NC':
@@ -221,7 +269,7 @@ if __name__ == "__main__":
                     print('Conta criada!')
                 else:
                     print('A conta não foi criada!')
-                
+
                 conta_selecionada = nova_conta
             else:
                 print('Não foi possível criar uma nova conta.')
@@ -244,11 +292,11 @@ if __name__ == "__main__":
                 numero = 0
                 senha = 0
 
-            conta_numero = None
+            conta_numero : Conta = None
 
             for conta in contas:
-                if (conta.numero == numero):
-                    if (conta.senha == senha):
+                if conta.numero == numero:
+                    if conta.senha == senha:
                         conta_numero = conta
                         break
                     else:
